@@ -37,12 +37,17 @@ def parseArguments():
         "--output",
         help="Output directory (default: current directory)",
         default=os.path.expanduser("~/Downloads/downloadSite/"),
-        # "~/Downloads/downloadSite/",
+    )
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        help="Recursively download files from subdirectories",
     )
     return parser.parse_args()
 
 
-def getFileLinks(folderUrl):
+def getFileLinks(folderUrl, recursive=False):
     """Fetch the folder listing page and extract file links."""
     try:
         response = requests.get(folderUrl)
@@ -58,7 +63,11 @@ def getFileLinks(folderUrl):
             continue
         fullUrl = urljoin(folderUrl, href)
         if href.endswith("/"):
-            print(f"{Fore.YELLOW}Skipping directory: {fullUrl}")
+            if recursive:
+                print(f"{Fore.YELLOW}Recursively scanning directory: {fullUrl}")
+                links.extend(getFileLinks(fullUrl, recursive))
+            else:
+                print(f"{Fore.YELLOW}Skipping directory: {fullUrl}")
             continue
         links.append(fullUrl)
     if not links:
@@ -105,7 +114,7 @@ def main():
             print(f"{Fore.RED}Error creating directory {args.output}: {e}")
             sys.exit(1)
     print(f"{Fore.YELLOW}Scanning for files in: {args.folderUrl}")
-    fileLinks = getFileLinks(args.folderUrl)
+    fileLinks = getFileLinks(args.folderUrl, args.recursive)
     print(f"{Fore.GREEN}Found {len(fileLinks)} file(s) to download.\n")
     for fileUrl in fileLinks:
         print(f"{Fore.CYAN}Starting download: {fileUrl} to {args.output}")

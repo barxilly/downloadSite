@@ -15,4 +15,5 @@ pip install -r requirements.txt
 ```bash
 python downloadsite.py <url>
     -o, --output <output>    Optional. Output directory (default: ~/Downloads/downloadSite)
+    -r, --recursive          Optional. Download recursively (default: False)
 ```
